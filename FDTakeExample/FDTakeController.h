@@ -13,6 +13,12 @@
 @protocol FDTakeDelegate <NSObject>
 
 @optional
+
+/**
+ *
+ */
+- (void)takeController:(FDTakeController *)controller didPressDestructiveAfterAttempting:(BOOL)madeAttempt;
+
 /**
  * Delegate method after the user has started a take operation but cancelled it
  */
@@ -106,5 +112,9 @@
  * Custom UI text (skips localization)
  */
 @property (nonatomic, copy) NSString *noSourcesText;
+
+
+
+- (void)_setUpActionSheet;
 
 @end

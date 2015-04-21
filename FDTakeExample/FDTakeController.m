@@ -97,8 +97,8 @@ static NSString * const kStringsTableName = @"FDTake";
         [self.sources addObject:[NSNumber numberWithInteger:UIImagePickerControllerSourceTypeSavedPhotosAlbum]];
         [self.buttonTitles addObject:[self textForButtonWithTitle:kChooseFromPhotoRollKey]];
     }
-    [self _setUpActionSheet];
-    [self.actionSheet setTag:kPhotosActionSheetTag];
+    //    [self _setUpActionSheet];
+    //    [self.actionSheet setTag:kPhotosActionSheetTag];
 }
 
 - (void)takeVideoOrChooseFromLibrary
@@ -150,6 +150,9 @@ static NSString * const kStringsTableName = @"FDTake";
     if (buttonIndex == self.actionSheet.cancelButtonIndex) {
         if ([self.delegate respondsToSelector:@selector(takeController:didCancelAfterAttempting:)])
             [self.delegate takeController:self didCancelAfterAttempting:NO];
+    } else if (buttonIndex == self.actionSheet.destructiveButtonIndex) {
+        if ([self.delegate respondsToSelector:@selector(takeController:didPressDestructiveAfterAttempting:)])
+            [self.delegate takeController:self didPressDestructiveAfterAttempting:NO];
     } else {
         self.imagePicker.sourceType = [[self.sources objectAtIndex:buttonIndex] integerValue];
         
@@ -242,11 +245,11 @@ static NSString * const kStringsTableName = @"FDTake";
     }
     // Handle a movie capture
     else if (CFStringCompare ((CFStringRef) mediaType, kUTTypeMovie, 0)
-        == kCFCompareEqualTo) {
+             == kCFCompareEqualTo) {
         if ([self.delegate respondsToSelector:@selector(takeController:gotVideo:withInfo:)])
             [self.delegate takeController:self gotVideo:[info objectForKey:UIImagePickerControllerMediaURL] withInfo:info];
     }
-
+    
     [picker dismissViewControllerAnimated:YES completion:nil];
     self.imagePicker = nil;
 }
@@ -257,7 +260,7 @@ static NSString * const kStringsTableName = @"FDTake";
     [[UIApplication sharedApplication] setStatusBarHidden:YES];
     [picker dismissViewControllerAnimated:YES completion:nil];
     self.imagePicker = nil;
-
+    
     if ([self.delegate respondsToSelector:@selector(takeController:didCancelAfterAttempting:)])
         [self.delegate takeController:self didCancelAfterAttempting:YES];
 }
@@ -305,7 +308,15 @@ static NSString * const kStringsTableName = @"FDTake";
                                               otherButtonTitles:nil];
         for (NSString *title in self.buttonTitles)
             [self.actionSheet addButtonWithTitle:title];
+        
         [self.actionSheet addButtonWithTitle:[self textForButtonWithTitle:kCancelKey]];
+        
+        for (int i = 0; i < [self.sources count]; i ++) {
+            if ([self.sources[i] intValue] == -1) {
+                [self.actionSheet setDestructiveButtonIndex:i];
+            }
+        }
+        
         self.actionSheet.cancelButtonIndex = self.sources.count;
         
         // If on iPad use the present rect and pop over style.
@@ -353,28 +364,28 @@ static NSString * const kStringsTableName = @"FDTake";
 
 - (NSString*)textForButtonWithTitle:(NSString*)title
 {
-	if ([title isEqualToString:kTakePhotoKey])
-		return self.takePhotoText ?: NSLocalizedStringFromTable(kTakePhotoKey, kStringsTableName, @"Option to take photo using camera");
-	else if ([title isEqualToString:kTakeVideoKey])
-		return self.takeVideoText ?: NSLocalizedStringFromTable(kTakeVideoKey, kStringsTableName, @"Option to take video using camera");
-	else if ([title isEqualToString:kChooseFromLibraryKey])
-		return self.chooseFromLibraryText ?: NSLocalizedStringFromTable(kChooseFromLibraryKey, kStringsTableName, @"Option to select photo/video from library");
-	else if ([title isEqualToString:kChooseFromPhotoRollKey])
-		return self.chooseFromPhotoRollText ?: NSLocalizedStringFromTable(kChooseFromPhotoRollKey, kStringsTableName, @"Option to select photo from photo roll");
-	else if ([title isEqualToString:kCancelKey])
-		return self.cancelText ?: NSLocalizedStringFromTable(kCancelKey, kStringsTableName, @"Decline to proceed with operation");
-	else if ([title isEqualToString:kNoSourcesKey])
-		return self.noSourcesText ?: NSLocalizedStringFromTable(kNoSourcesKey, kStringsTableName, @"There are no sources available to select a photo");
-	
-	NSAssert(NO, @"Invalid title passed to textForButtonWithTitle:");
-	
-	return nil;
+    if ([title isEqualToString:kTakePhotoKey])
+        return self.takePhotoText ?: NSLocalizedStringFromTable(kTakePhotoKey, kStringsTableName, @"Option to take photo using camera");
+    else if ([title isEqualToString:kTakeVideoKey])
+        return self.takeVideoText ?: NSLocalizedStringFromTable(kTakeVideoKey, kStringsTableName, @"Option to take video using camera");
+    else if ([title isEqualToString:kChooseFromLibraryKey])
+        return self.chooseFromLibraryText ?: NSLocalizedStringFromTable(kChooseFromLibraryKey, kStringsTableName, @"Option to select photo/video from library");
+    else if ([title isEqualToString:kChooseFromPhotoRollKey])
+        return self.chooseFromPhotoRollText ?: NSLocalizedStringFromTable(kChooseFromPhotoRollKey, kStringsTableName, @"Option to select photo from photo roll");
+    else if ([title isEqualToString:kCancelKey])
+        return self.cancelText ?: NSLocalizedStringFromTable(kCancelKey, kStringsTableName, @"Decline to proceed with operation");
+    else if ([title isEqualToString:kNoSourcesKey])
+        return self.noSourcesText ?: NSLocalizedStringFromTable(kNoSourcesKey, kStringsTableName, @"There are no sources available to select a photo");
+    
+    NSAssert(NO, @"Invalid title passed to textForButtonWithTitle:");
+    
+    return nil;
 }
 
 #pragma mark - UINavigationControllerDelegate
 
 -(void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated{
-
+    
 }
 
 @end
